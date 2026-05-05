@@ -1,0 +1,11 @@
+{
+  "name": "manyue-fullmoon-page",
+  "private": true,
+  "scripts": {
+    "dev": "serve . --listen tcp://0.0.0.0:${PORT:-3000}",
+    "start": "serve . --listen tcp://0.0.0.0:${PORT:-3000}"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}

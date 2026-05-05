@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
+<!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  满月20件小事 · 活动页原型                            ║
+  ║  设计规范：美柚设计系统                               ║
+  ║  主色：#FF4D88  背景：#f2f2f5                        ║
+  ║                                                      ║
+  ║  TODO LIST FOR CURSOR:                               ║
+  ║  1. 替换 BABY_NAME 为真实宝宝名字                    ║
+  ║  2. 替换 BIRTH / FULLMOON / TODAY 为真实日期         ║
+  ║  3. 日历格子照片缩略图接入真实图片 URL               ║
+  ║  4. 自定义小事持久化（接入后端 API）                 ║
+  ║  5. 纪念册付费下载接入支付流程                       ║
+  ╚══════════════════════════════════════════════════════╝
+-->
+<style>
+/* ── CSS VARIABLES（美柚设计规范） ── */
+:root {
+  --font-diary: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --pink: #ff4d88;
+  --pink-light: #FFB3CE;
+  --pink-pale: #FFF0F5;
+  --pink-deep: #E0457A;
+  --warm: #FFFAF9;
+  --dark: rgba(0,0,0,0.8);
+  --mid: rgba(0,0,0,0.6);
+  --light: rgba(0,0,0,0.35);
+  --gold: #F6C344;
+  --bg: #f2f2f5;
+  --card: #fff;
+  --today-bg: #323232;
+}
+
+/* ── RESET ── */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* ── LAYOUT ── */
+body {
+  font-family: "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px 0 40px;
+}
+.phone {
+  width: 390px;
+  background: var(--bg);
+  border-radius: 40px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+  max-height: 820px;
+}
+.sa {
+  height: 820px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 24px;
+}
+.sa::-webkit-scrollbar { display: none; }
+
+/* ── NAV ── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  position: sticky;
+  top: 0;
+  background: rgba(242,242,245,0.92);
+  backdrop-filter: blur(14px);
+  z-index: 100;
+  border-bottom: 0.5px solid rgba(255,77,136,0.08);
+}
+.nav-back {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--pink-pale); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; color: var(--pink);
+}
+.nav-title { font-size: 15px; font-weight: 500; color: var(--dark); }
+.nav-share {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--pink); font-weight: 500;
+  background: var(--pink-pale); padding: 6px 12px;
+  border-radius: 18px; border: none; cursor: pointer;
+}
+
+/* ── 顶部成长记录：单卡片模块（仅头图 + 日历） ── */
+.record-module {
+  margin: 10px 14px 12px;
+  background: var(--card);
+  border-radius: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+.rm-divider {
+  height: 0.5px;
+  background: rgba(0,0,0,0.06);
+  margin: 0 16px;
+}
+.record-hero { padding: 18px 16px 16px; }
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hero-text { flex: 1; min-width: 0; }
+.hero-diary-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 10px 0;
+  padding: 2px 0;
+  font-family: var(--font-diary);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--pink);
+  letter-spacing: 0.14em;
+}
+.hero-diary-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(255, 77, 136, 0.1);
+  border: 1px solid rgba(255, 77, 136, 0.15);
+}
+.hero-diary-icon svg {
+  display: block;
+}
+.hero-diary-text {
+  flex: 1;
+  min-width: 0;
+}
+.hero-sub {
+  font-size: 14px;
+  color: var(--mid);
+  line-height: 1.47;
+  margin-bottom: 12px;
+}
+.hero-prog-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.hero-prog-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--pink-pale);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.hero-prog-fill {
+  height: 100%;
+  background: var(--pink);
+  border-radius: 8px;
+  transition: width 0.8s ease;
+  width: 0;
+}
+.hero-prog-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--pink);
+  white-space: nowrap;
+}
+.hero-art { flex-shrink: 0; }
+.hero-art-circle {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #fff6fa, #ffe8f0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 16px rgba(255,77,136,0.12);
+}
+.hero-art-moon { position: absolute; top: 10px; right: 12px; font-size: 16px; opacity: 0.85; }
+.hero-art-baby { font-size: 32px; position: relative; z-index: 1; }
+
+.record-module .cal-zone {
+  padding: 12px 12px 14px;
+}
+.wd-row { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 8px; }
+.wd {
+  text-align: center;
+  font-size: 12px;
+  color: var(--light);
+  padding: 4px 0;
+  font-weight: 400;
+}
+.wd.r { color: rgba(255,77,136,0.45); }
+.days-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+
+.dc {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f7;
+  transition: transform 0.15s;
+}
+.dc.can-tap { cursor: pointer; }
+.dc.can-tap:active { transform: scale(0.96); }
+.dc-empty {
+  background: transparent;
+  pointer-events: none;
+}
+.dc-num {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark);
+  z-index: 2;
+}
+
+.dc.birth {
+  background: linear-gradient(145deg, #fff8e8, #ffe9a8);
+  border-radius: 50%;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(246, 195, 68, 0.32);
+  border: 1px solid rgba(230, 180, 60, 0.35);
+}
+.dc.birth .dc-num {
+  position: static;
+  color: rgba(0, 0, 0, 0.78);
+  font-size: 15px;
+  line-height: 1.1;
+}
+.dc.birth .dc-tag {
+  font-size: 11px;
+  color: rgba(110, 82, 28, 0.88);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.dc.today {
+  background: var(--today-bg);
+  border-radius: 50%;
+  flex-direction: column;
+}
+.dc.today .dc-num {
+  position: static;
+  color: rgba(255,255,255,0.9);
+  font-size: 15px;
+}
+.dc.today .dc-tag {
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  margin-top: 2px;
+}
+
+.dc.has-thumb {
+  background: #e8e8ec;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.dc.has-thumb .dc-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+.dc.has-thumb .dc-num {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+}
+
+/* 仅有打卡、无照片 */
+.dc.has-check-mark {
+  background: var(--pink-pale);
+  border: 1.5px solid rgba(255,77,136,0.28);
+}
+.dc.has-check-mark .dc-num {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: var(--dark);
+}
+.dc-mark-check {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--pink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(255,77,136,0.35);
+}
+
+/* 仅有文案、无照片 */
+.dc.has-text-mark {
+  background: linear-gradient(135deg, #f0f5ff, #e8eeff);
+  border: 1.5px solid rgba(79,124,174,0.28);
+}
+.dc.has-text-mark .dc-num {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: var(--dark);
+}
+.dc-mark-text {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #4f7cae;
+  background: rgba(255,255,255,0.92);
+  padding: 2px 5px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.dc.fullmoon {
+  background: linear-gradient(145deg, #FFF8E6, var(--gold));
+  border-radius: 8px;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(246,195,68,0.35);
+}
+.dc.fullmoon .dc-num {
+  position: static;
+  color: rgba(0,0,0,0.75);
+  font-size: 15px;
+}
+.dc.fullmoon .dc-tag {
+  font-size: 10px;
+  color: rgba(0,0,0,0.55);
+  margin-top: 2px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1.2;
+  padding: 0 2px;
+}
+
+.dc.in-range {
+  background: #fafafa;
+}
+.dc.in-range .dc-num { color: var(--dark); }
+
+/* 演示：指定日期无记录（灰格） */
+.dc.unrecorded {
+  background: #e6e6ea;
+}
+.dc.unrecorded .dc-num {
+  color: rgba(0, 0, 0, 0.38);
+  font-weight: 500;
+}
+
+.dc.muted {
+  background: #f2f2f5;
+  pointer-events: none;
+}
+.dc.muted .dc-num { color: var(--light); }
+
+/* ── 今日推荐（日历下方 · 2 条） ── */
+.rec-wrap {
+  margin: 0 14px 12px;
+  background: var(--card);
+  border-radius: 24px;
+  padding: 12px 14px 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+.rec-head { margin-bottom: 10px; }
+.rec-title { font-size: 14px; font-weight: 500; color: var(--dark); }
+.rec-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  background: var(--pink-pale);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.rec-item:last-child { margin-bottom: 0; }
+.rec-item:active { transform: scale(0.98); }
+.ri-icon { font-size: 20px; flex-shrink: 0; }
+.ri-body { flex: 1; min-width: 0; }
+.ri-name { font-size: 14px; font-weight: 500; color: var(--dark); line-height: 1.3; }
+.ri-desc { font-size: 12px; color: var(--mid); margin-top: 3px; line-height: 1.29; }
+.ri-btn {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  background: var(--pink);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ── 满月纪念册（主内容区，替代原收集册+时间轴） ── */
+.album-page {
+  margin: 4px 14px 12px;
+  background: var(--card);
+  border-radius: 24px;
+  padding: 16px 14px 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+.album-header { text-align: center; margin-bottom: 10px; }
+.album-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--dark);
+}
+.album-page .book-banner { margin-bottom: 12px; }
+.album-page .pol-grid { margin-bottom: 4px; }
+.pol-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 3px;
+}
+.album-download-hint {
+  text-align: center;
+  font-size: 12px;
+  color: var(--mid);
+  margin-bottom: 8px;
+}
+.add-custom-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 9px;
+  border-radius: 12px;
+  border: 1.5px dashed rgba(255,77,136,0.3);
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--pink);
+  font-weight: 500;
+  width: 100%;
+  font-family: inherit;
+  margin-top: 8px;
+}
+.cta-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+  color: #fff; font-size: 14px; font-weight: 600;
+  padding: 14px; border-radius: 14px; border: none; cursor: pointer;
+  box-shadow: 0 6px 24px rgba(255,77,136,0.28);
+  font-family: inherit; transition: transform 0.15s;
+}
+.cta-btn:active { transform: scale(0.98); }
+
+/* ── OVERLAY ── */
+.ov {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.42); backdrop-filter: blur(3px);
+  z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.ov.show { opacity: 1; pointer-events: all; }
+
+/* ── BOTTOM SHEET ── */
+.sh {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+  width: 390px; background: #fff; border-radius: 24px 24px 0 0;
+  padding: 0 0 36px; z-index: 201;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 -8px 40px rgba(45,27,46,0.14);
+}
+.sh.show { transform: translateX(-50%) translateY(0); }
+.sh-handle { width: 34px; height: 4px; background: #e8e0e8; border-radius: 4px; margin: 12px auto 0; }
+.sh-title { text-align: center; padding: 14px 20px 2px; font-size: 15px; font-weight: 600; color: var(--dark); }
+.sh-sub { text-align: center; font-size: 11px; color: var(--light); padding: 0 20px 14px; }
+.sh-opts { display: flex; flex-direction: column; gap: 9px; padding: 0 16px; }
+.so {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; border-radius: 14px;
+  cursor: pointer; border: none; text-align: left; width: 100%;
+  transition: transform 0.15s; font-family: inherit;
+}
+.so:active { transform: scale(0.98); }
+.so-photo { background: linear-gradient(135deg, #FFF0F5, #FFE4EF); }
+.so-text  { background: linear-gradient(135deg, #F0F5FF, #E4ECFF); }
+.so-check { background: linear-gradient(135deg, #F0FFF0, #E0F5E0); }
+.so-icon { font-size: 22px; }
+.so-name { font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 1px; }
+.so-desc { font-size: 11px; color: var(--mid); }
+.so-arr  { font-size: 16px; color: var(--light); margin-left: auto; }
+.sh-cancel {
+  margin: 10px 16px 0; width: calc(100% - 32px);
+  padding: 13px; background: #f5f0f5; border: none; border-radius: 14px;
+  font-size: 13px; color: var(--mid); cursor: pointer; font-family: inherit; font-weight: 500;
+}
+
+/* Custom input sheet */
+.custom-inp-wrap { padding: 0 16px; }
+.custom-inp {
+  width: 100%; padding: 14px;
+  border: 1.5px solid rgba(255,77,136,0.2); border-radius: 14px;
+  font-size: 14px; font-family: inherit; color: var(--dark); outline: none; margin-bottom: 12px;
+}
+.custom-inp:focus { border-color: var(--pink); }
+
+/* Book sheet */
+.book-inner { padding: 0 14px 32px; max-height: 540px; overflow-y: auto; }
+.book-banner {
+  background: linear-gradient(135deg, var(--pink-pale), #FFE0EC);
+  border-radius: 16px; padding: 13px; margin-bottom: 12px; text-align: center;
+}
+.book-banner-t { font-size: 14px; font-weight: 700; color: var(--dark); }
+.book-banner-s { font-size: 10px; color: var(--mid); margin-top: 0; line-height: 1.35; }
+.pol-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.pol {
+  background: #fff; border-radius: 5px; padding: 6px 6px 10px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.10);
+  cursor: pointer; transition: transform 0.2s; position: relative;
+}
+.pol.filled { cursor: default; }
+.pol.empty { cursor: pointer; }
+.pol:nth-child(odd)  { transform: rotate(-1.5deg); }
+.pol:nth-child(even) { transform: rotate(1deg); }
+.pol:active { transform: scale(0.94); }
+.pol-img {
+  width: 100%; aspect-ratio: 1; border-radius: 3px;
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+}
+.pol.filled .pol-img { background: linear-gradient(135deg, #FFE4EF, var(--pink-pale)); }
+.pol.filled .pol-img:has(img) { background: transparent; }
+.pol.empty  .pol-img { background: #f5f0f5; }
+.pol-plus {
+  font-size: 26px;
+  font-weight: 400;
+  color: #c5c5c9;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pol-name { font-size: 7px; color: var(--mid); text-align: center; margin-top: 5px; line-height: 1.3; }
+.pol.filled .pol-name { color: var(--dark); }
+
+/* ── MILESTONE POPUP ── */
+.ms {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+  width: 390px; background: #fff; border-radius: 24px 24px 0 0;
+  padding: 18px 20px 44px; z-index: 201;
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  text-align: center; box-shadow: 0 -8px 40px rgba(45,27,46,0.14);
+}
+.ms.show { transform: translateX(-50%) translateY(0); }
+.ms-h  { width: 34px; height: 4px; background: #e8e0e8; border-radius: 4px; margin: 0 auto 18px; }
+.ms-e  { font-size: 52px; margin-bottom: 8px; }
+.ms-t  { font-size: 19px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+.ms-d  { font-size: 12px; color: var(--mid); margin-bottom: 16px; line-height: 1.7; }
+.ms-r  { background: linear-gradient(135deg, var(--pink-pale), #FFE0EC); border-radius: 14px; padding: 12px 16px; margin-bottom: 18px; border: 1.5px solid rgba(255,77,136,0.15); }
+.ms-rl { font-size: 10px; color: var(--mid); margin-bottom: 3px; }
+.ms-rn { font-size: 14px; font-weight: 700; color: var(--pink); }
+.ms-btns { display: flex; gap: 10px; }
+.ms-sec { flex: 1; padding: 12px; border-radius: 12px; background: #f5f0f5; border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--mid); }
+.ms-pri { flex: 1; padding: 12px; border-radius: 12px; background: linear-gradient(135deg, var(--pink), var(--pink-deep)); border: none; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600; color: #fff; box-shadow: 0 4px 12px rgba(255,77,136,0.28); }
+
+/* Confetti */
+.cfc { position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 390px; height: 100%; pointer-events: none; z-index: 300; overflow: hidden; }
+.ccp { position: absolute; animation: cf 2s ease-in forwards; }
+@keyframes cf { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(900px) rotate(720deg);opacity:0} }
+</style>
+</head>
+<body>
+<div class="phone"><div class="sa">
+
+<!-- ══════════════ NAV ══════════════ -->
+<nav class="nav">
+  <button class="nav-back">‹</button>
+  <span class="nav-title">满月20件小事</span>
+  <button type="button" class="nav-share" onclick="sharePage()" aria-label="分享">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M18 8a3 3 0 1 0-2.83-4H15a3 3 0 0 0 3 3v.17A3 3 0 1 0 18 8ZM6 15a3 3 0 1 0 2.83 4H9a3 3 0 0 0-3-3v-.17A3 3 0 1 0 6 15ZM18 15l-7-4M6 9l7 4" stroke="#FF4D88" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    分享
+  </button>
+</nav>
+
+<!-- ══════════════ 成长记录（单模块：头图 + 日历） ══════════════ -->
+<div class="record-module">
+  <div class="record-hero">
+    <div class="hero-top">
+      <div class="hero-text">
+        <h1 class="hero-diary-head" id="diaryHeadTitle">
+          <span class="hero-diary-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M7 3.5h10.5A2.5 2.5 0 0 1 20 6v14.5a1 1 0 0 1-1.32.948L12 19.28l-6.68 2.168A1 1 0 0 1 4 20.5v-15A2.5 2.5 0 0 1 6.5 3H7z" fill="#fff" stroke="#FF4D88" stroke-width="1.35" stroke-linejoin="round"/>
+              <path d="M14 2.8v4.2l-1-.65L12 6.9l-1 .55V2.75" fill="rgba(255,77,136,0.2)" stroke="#FF4D88" stroke-width="1" stroke-linejoin="round"/>
+              <path d="M7 3.5v15.2" stroke="#FF4D88" stroke-width="1.2" stroke-linecap="round" opacity="0.35"/>
+              <path d="M10 8.5h6M10 12h4.5" stroke="#FF4D88" stroke-width="1" stroke-linecap="round" opacity="0.45"/>
+            </svg>
+          </span>
+          <span class="hero-diary-text">柚子的满月日记</span>
+        </h1>
+        <p class="hero-sub" id="heroSub">3月4日 → 4月4日 · 出生第13天</p>
+        <div class="hero-prog-row">
+          <div class="hero-prog-bar">
+            <div class="hero-prog-fill" id="progFill" style="width:15%"></div>
+          </div>
+          <span class="hero-prog-count" id="progTxt">3 / 20 件</span>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-art-circle">
+          <span class="hero-art-moon">🌙</span>
+          <span class="hero-art-baby">👶</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="rm-divider" aria-hidden="true"></div>
+  <div class="cal-zone">
+    <div class="wd-row">
+      <div class="wd r">日</div><div class="wd">一</div><div class="wd">二</div>
+      <div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd r">六</div>
+    </div>
+    <div class="days-grid" id="daysGrid"></div>
+  </div>
+</div>
+
+<!-- ══════════════ 今日推荐（2 条纪念小事） ══════════════ -->
+<div class="rec-wrap">
+  <div class="rec-head">
+    <div class="rec-title" id="recHeadTitle">✨ 3月16日小事推荐</div>
+  </div>
+  <div id="recList"></div>
+</div>
+
+<!-- ══════════════ 满月纪念册（替代原收集册 + 时间轴） ══════════════ -->
+<section id="album" class="album-page">
+  <div class="album-header">
+    <div class="album-title">📕 <span id="albumHeadTitle">柚子的满月纪念册</span></div>
+  </div>
+  <div class="book-banner">
+    <div class="book-banner-s"><span id="albumBannerSub">3月4日 → 4月4日</span> · 已收集 <span id="albumDoneCount">3</span> / 20 个瞬间</div>
+  </div>
+  <div class="pol-grid" id="albumGrid"></div>
+  <button type="button" class="add-custom-btn" onclick="openCustom()">＋ 添加一件自定义小事</button>
+  <div style="margin-top:14px">
+    <div class="album-download-hint">完成全部20件后可下载高清印刷版</div>
+    <button type="button" class="cta-btn" onclick="previewPhotoBook()">预览照片书</button>
+  </div>
+</section>
+
+</div></div>
+
+<!-- ══════════════ OVERLAY ══════════════ -->
+<div class="ov" id="ov" onclick="closeAll()"></div>
+
+<!-- ══════════════ RECORD SHEET ══════════════ -->
+<div class="sh" id="recSh">
+  <div class="sh-handle"></div>
+  <div class="sh-title" id="shTitle">记录小事</div>
+  <div class="sh-sub">选择记录方式 · 无需照片也可打卡</div>
+  <div class="sh-opts">
+    <button class="so so-photo" onclick="doComplete('photo')">
+      <span class="so-icon">📷</span>
+      <div><div class="so-name">拍照上传</div><div class="so-desc">用照片或视频记录这个瞬间</div></div>
+      <span class="so-arr">›</span>
+    </button>
+    <button class="so so-text" onclick="doComplete('text')">
+      <span class="so-icon">📝</span>
+      <div><div class="so-name">文字记录</div><div class="so-desc">写下你想说的话，生成精美卡片</div></div>
+      <span class="so-arr">›</span>
+    </button>
+    <button class="so so-check" onclick="doComplete('check')">
+      <span class="so-icon">✅</span>
+      <div><div class="so-name">直接打卡</div><div class="so-desc">先记录，照片稍后可补传</div></div>
+      <span class="so-arr">›</span>
+    </button>
+  </div>
+  <button class="sh-cancel" onclick="closeAll()">取消</button>
+</div>
+
+<!-- ══════════════ CUSTOM SHEET ══════════════ -->
+<div class="sh" id="customSh">
+  <div class="sh-handle"></div>
+  <div class="sh-title">添加自定义小事</div>
+  <div class="sh-sub">记录那些独属于你们的珍贵瞬间</div>
+  <div class="custom-inp-wrap">
+    <input
+      class="custom-inp"
+      id="customInp"
+      placeholder="给这件小事起个名字，比如：第一次笑出声"
+      maxlength="20"
+    />
+    <button class="cta-btn" onclick="addCustom()">确认添加</button>
+  </div>
+</div>
+
+<!-- ══════════════ BOOK SHEET ══════════════ -->
+<div class="sh" id="bookSh" style="padding-bottom:0">
+  <div class="sh-handle"></div>
+  <div class="sh-title">📕 柚子的满月纪念册</div>
+  <div class="book-inner">
+    <div class="book-banner">
+      <div class="book-banner-s"><span id="bookBannerSub">3月4日 → 4月4日</span> · 已收集 <span id="bookDone">3</span> / 20 个瞬间</div>
+    </div>
+    <div class="pol-grid" id="polGrid"></div>
+    <div style="margin-top:14px">
+      <div style="text-align:center;font-size:10px;color:var(--light);margin-bottom:8px">完成全部20件后可下载高清印刷版</div>
+      <!-- TODO: 接入支付流程 -->
+      <button type="button" class="cta-btn" onclick="previewPhotoBook()">预览照片书</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MILESTONE POPUP ══════════════ -->
+<div class="ms" id="msPop">
+  <div class="ms-h"></div>
+  <div class="ms-e" id="msE"></div>
+  <div class="ms-t" id="msT"></div>
+  <div class="ms-d" id="msD"></div>
+  <div class="ms-r"><div class="ms-rl">🎁 奖励</div><div class="ms-rn" id="msRn"></div></div>
+  <div class="ms-btns">
+    <button class="ms-sec" onclick="closeMs()">稍后查看</button>
+    <button class="ms-pri" onclick="closeMs()">继续记录 →</button>
+  </div>
+</div>
+
+<div class="cfc" id="cfc"></div>
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────────
+// CONFIG — 修改这里的日期和宝宝名字
+// ─────────────────────────────────────────────
+const BABY_NAME  = '柚子';                  // TODO: 替换宝宝名字
+const BIRTH      = new Date(2025, 2, 4);   // TODO: 出生日期 (月份从0开始，3=4月)
+const FULLMOON   = new Date(2025, 3, 4);   // TODO: 满月日期
+const TODAY      = new Date(2025, 2, 16);  // TODO: 生产环境改为 new Date()
+
+function stripTime(d) {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+const ASSET_PHOTOS = [
+  'assets/p01.png', 'assets/p02.png', 'assets/p03.png', 'assets/p04.png', 'assets/p05.png',
+  'assets/p06.png', 'assets/p07.png', 'assets/p08.png', 'assets/p09.png',
+];
+const fmtMD = d => `${d.getMonth() + 1}月${d.getDate()}日`;
+/** 日历照片格：仅使用实际上传的 photoUrl */
+function firstPhotoUrl(recs) {
+  const urls = recs.map(t => t.photoUrl).filter(Boolean);
+  return urls.length ? urls[0] : null;
+}
+function nextAssetPhoto() {
+  const used = new Set(tasks.map(t => t.photoUrl).filter(Boolean));
+  for (let i = 0; i < ASSET_PHOTOS.length; i++) {
+    const u = ASSET_PHOTOS[i];
+    if (!used.has(u)) return u;
+  }
+  return ASSET_PHOTOS[tasks.filter(t => t.done).length % ASSET_PHOTOS.length];
+}
+
+// 今日推荐：优先展示的未完成 ID（其余按列表顺序补足 2 条）
+const REC_PREFERRED_IDS = ['d3', 'r1', 'b5', 'k1', 'k2', 'k3'];
+
+// ─────────────────────────────────────────────
+// TASK DATA — 20件小事（demo：16 日前含照片 / 纯打卡 / 文案）
+// ─────────────────────────────────────────────
+const INITIAL_TASKS = [
+  { id:'b1', name:'出生第一天',       desc:'记录宝宝来到世界的第一刻',  emoji:'👶', cat:'birth',  done:true,  type:'photo', doneDay:0, photoUrl:'assets/p01.png' },
+  { id:'b2', name:'第一次抓拍表情包', desc:'皱眉嘟嘴大眼睛……',          emoji:'😄', cat:'birth',  done:true,  type:'photo', doneDay:0, photoUrl:'assets/p02.png' },
+  { id:'b3', name:'第一次小手抓握',   desc:'小小的手抓住你的手指',       emoji:'🤲', cat:'birth',  done:true,  type:'check', doneDay:2 },
+  { id:'b4', name:'第一次胎发特写',   desc:'软软的发丝，珍贵的纪念',     emoji:'✂️', cat:'birth',  done:true,  type:'text',  doneDay:3 },
+  { id:'b5', name:'第一次可爱睡姿',   desc:'小手小脚蜷缩的样子',         emoji:'😴', cat:'birth',  done:false },
+  { id:'b6', name:'第一个啼哭视频',   desc:'那声响亮的啼哭',              emoji:'😭', cat:'birth',  done:true,  type:'photo', doneDay:5, photoUrl:'assets/p03.png' },
+  { id:'b7', name:'第一次脐带护理',   desc:'细心呵护宝贝的小肚脐',       emoji:'🩹', cat:'birth',  done:true,  type:'photo', doneDay:6, photoUrl:'assets/p09.png' },
+  { id:'d1', name:'第一次洗澡',       desc:'小家伙在水里的表情',          emoji:'🛁', cat:'daily',  done:true,  type:'text',  doneDay:7 },
+  { id:'d2', name:'第一次抬头',       desc:'使劲儿把头抬起来的那一刻',    emoji:'💪', cat:'daily',  done:true,  type:'photo', doneDay:8, photoUrl:'assets/p04.png' },
+  { id:'d3', name:'第一次剪指甲',     desc:'小小的手，需要细心对待',      emoji:'💅', cat:'daily',  done:false },
+  { id:'d4', name:'第一次穿新衣服',   desc:'小衣服大了一圈，可爱极了',    emoji:'👕', cat:'daily',  done:true,  type:'photo', doneDay:9, photoUrl:'assets/p05.png' },
+  { id:'d5', name:'第一次戴小帽子',   desc:'帽子压着耳朵软软的模样',      emoji:'👒', cat:'daily',  done:true,  type:'text',  doneDay:10 },
+  { id:'d6', name:'第一次出门',       desc:'第一次感受外面的世界',        emoji:'🌤️', cat:'daily',  done:true,  type:'photo', doneDay:11, photoUrl:'assets/p07.png' },
+  { id:'k1', name:'和家人第一次合影', desc:'全家福，一张就够了',           emoji:'👨‍👩‍👧', cat:'bond', done:false },
+  { id:'k2', name:'和妈妈的亲子贴贴', desc:'贴贴脸颊，最温暖的瞬间',      emoji:'🤱', cat:'bond',   done:false },
+  { id:'k3', name:'第一次听儿歌反应', desc:'听到音乐的眼神变化',           emoji:'🎵', cat:'bond',   done:false },
+  { id:'k4', name:'第一次玩玩具',     desc:'小眼睛盯着玩具看的样子',      emoji:'🧸', cat:'bond',   done:false },
+  { id:'r1', name:'小脚丫/掌印',      desc:'印下这一刻，永久珍藏',        emoji:'👣', cat:'ritual', done:false },
+  { id:'r2', name:'体重身高记录照',   desc:'多少克、多少厘米，定格',      emoji:'📏', cat:'ritual', done:false },
+  { id:'r3', name:'满月照',           desc:'宝宝满月，值得被铭记',        emoji:'🎂', cat:'ritual', done:false },
+];
+
+// ─────────────────────────────────────────────
+// MILESTONES
+// ─────────────────────────────────────────────
+const MILESTONES = [
+  { n:5,  e:'🌸', t:'完成5件了！',       d:'每一个第一次都是独一无二的',           r:'纪念册前5页已生成' },
+  { n:10, e:'📖', t:'完成一半啦！',      d:'翻页纪念册预览解锁，可以看到故事丰富', r:'翻页纪念册预览解锁' },
+  { n:15, e:'🎨', t:'解锁封面定制！',    d:'还差5件就满月啦！',                    r:'满月纪念册封面定制' },
+  { n:20, e:'🎉', t:'恭喜完成全部20件！', d:'满月纪念册已生成，记录了最珍贵的第一个月！', r:'满月翻页纪念册（付费可下载高清版）' },
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let tasks    = INITIAL_TASKS.map(t => ({ ...t }));
+let curId    = null;
+let shownMs  = new Set([5]);  // 已展示过的里程碑
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+const doff    = d => Math.round((stripTime(d) - stripTime(BIRTH)) / 864e5);
+const getDone = ()  => tasks.filter(t => t.done).length;
+/** 日历上显示为「未记录」灰格：出生日起偏移 1、4 → 例：3/5、3/8 */
+const UNRECORDED_GREY_OFFS = new Set([1, 4]);
+
+// ─────────────────────────────────────────────
+// BUILD CALENDAR
+// ─────────────────────────────────────────────
+function buildCal() {
+  const grid = document.getElementById('daysGrid');
+  grid.innerHTML = '';
+
+  const dayMap = {};
+  tasks.filter(t => t.done && t.doneDay != null).forEach(t => {
+    if (!dayMap[t.doneDay]) dayMap[t.doneDay] = [];
+    dayMap[t.doneDay].push(t);
+  });
+
+  const birth = stripTime(BIRTH);
+  const fullmoon = stripTime(FULLMOON);
+  const today = stripTime(TODAY);
+
+  const pad = birth.getDay();
+  for (let i = 0; i < pad; i++) {
+    const el = document.createElement('div');
+    el.className = 'dc dc-empty';
+    grid.appendChild(el);
+  }
+
+  const cur = new Date(birth);
+  while (cur <= fullmoon) {
+    const d = stripTime(cur);
+    const dayNum = d.getDate();
+    const off = doff(d);
+    const forceGreyUnrecorded = UNRECORDED_GREY_OFFS.has(off);
+    const el = document.createElement('div');
+    el.className = 'dc';
+
+    const isBirth = d.getTime() === birth.getTime();
+    const isFullMoon = d.getTime() === fullmoon.getTime();
+    const isTodayCell = d.getTime() === today.getTime();
+    const recs = forceGreyUnrecorded ? [] : (dayMap[off] || []);
+    const hasRecord = recs.length > 0;
+    const beforeOrOnToday = d <= today;
+    const thumb = hasRecord && beforeOrOnToday ? firstPhotoUrl(recs) : null;
+    const hasTextOnly = recs.some(t => t.type === 'text');
+    const hasCheckOnly = recs.some(t => t.type === 'check');
+
+    if (isBirth) {
+      el.classList.add('birth');
+      el.innerHTML = `<span class="dc-num">${dayNum}</span><span class="dc-tag">出生</span>`;
+    } else if (isFullMoon) {
+      el.classList.add('fullmoon');
+      el.innerHTML = `<span class="dc-num">${dayNum}</span><span class="dc-tag">满月🎂</span>`;
+    } else if (isTodayCell) {
+      el.classList.add('today');
+      el.innerHTML = `<span class="dc-num">${dayNum}</span><span class="dc-tag">今天</span>`;
+    } else if (forceGreyUnrecorded && beforeOrOnToday) {
+      el.classList.add('unrecorded');
+      el.innerHTML = `<span class="dc-num">${dayNum}</span>`;
+    } else if (hasRecord && beforeOrOnToday) {
+      if (thumb) {
+        el.classList.add('has-thumb');
+        el.innerHTML = `<img class="dc-thumb" src="${thumb}" alt="" loading="lazy"/><span class="dc-num">${dayNum}</span>`;
+      } else if (hasTextOnly) {
+        el.classList.add('has-text-mark');
+        el.innerHTML = `<span class="dc-num">${dayNum}</span><span class="dc-mark-text" aria-hidden="true">文案</span>`;
+      } else if (hasCheckOnly) {
+        el.classList.add('has-check-mark');
+        el.innerHTML = `<span class="dc-num">${dayNum}</span><span class="dc-mark-check" aria-hidden="true">✓</span>`;
+      } else {
+        el.classList.add('in-range');
+        el.innerHTML = `<span class="dc-num">${dayNum}</span>`;
+      }
+    } else if (beforeOrOnToday) {
+      el.classList.add('in-range');
+      el.innerHTML = `<span class="dc-num">${dayNum}</span>`;
+    } else {
+      el.classList.add('muted');
+      el.innerHTML = `<span class="dc-num">${dayNum}</span>`;
+    }
+
+    const canTap = beforeOrOnToday && !isBirth && !isTodayCell && !isFullMoon;
+    if (canTap) {
+      const pending = tasks.find(t => !t.done);
+      if (pending) {
+        el.classList.add('can-tap');
+        el.onclick = () => openSheet(pending.id);
+      }
+    }
+
+    grid.appendChild(el);
+    cur.setDate(cur.getDate() + 1);
+  }
+}
+
+function buildRec() {
+  const list = document.getElementById('recList');
+  if (!list) return;
+  const pending = tasks.filter(t => !t.done);
+  const preferred = REC_PREFERRED_IDS.map(id => tasks.find(t => t.id === id)).filter(t => t && !t.done);
+  const prefSet = new Set(preferred.map(t => t.id));
+  const rest = pending.filter(t => !prefSet.has(t.id));
+  const picks = [...preferred, ...rest].slice(0, 2);
+  if (!picks.length) {
+    list.innerHTML =
+      '<div style="text-align:center;font-size:12px;color:var(--mid);padding:12px 4px;line-height:1.4">🎉 太棒了，小事都集齐啦<br/><span style="font-size:11px;color:var(--light)">可以生成满月纪念册啦</span></div>';
+    return;
+  }
+  list.innerHTML = picks
+    .map(
+      t => `
+    <div class="rec-item" role="button" tabindex="0" onclick="openSheet('${t.id}')">
+      <span class="ri-icon">${t.emoji}</span>
+      <div class="ri-body">
+        <div class="ri-name">${t.name}</div>
+        <div class="ri-desc">${t.desc}</div>
+      </div>
+      <button type="button" class="ri-btn" onclick="event.stopPropagation();openSheet('${t.id}')">去记录</button>
+    </div>`
+    )
+    .join('');
+}
+
+async function sharePage() {
+  const title = `${BABY_NAME}的满月日记`;
+  const url = typeof location !== 'undefined' ? location.href : '';
+  try {
+    if (navigator.share) {
+      await navigator.share({ title, text: '来看看宝宝的满月日记', url });
+      return;
+    }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(url);
+      alert('链接已复制，可以粘贴分享给好友');
+      return;
+    }
+  } catch (_) {}
+  prompt('复制链接分享给好友：', url);
+}
+
+function previewPhotoBook() {
+  alert('预览照片书（原型示意）');
+}
+
+function polTileHtml(t) {
+  let inner;
+  if (t.done && t.photoUrl) inner = `<img src="${t.photoUrl}" alt="">`;
+  else if (t.done) inner = t.emoji;
+  else inner = '<span class="pol-plus" aria-hidden="true">+</span>';
+
+  return `
+    <div class="pol ${t.done ? 'filled' : 'empty'}"
+         role="${t.done ? 'presentation' : 'button'}"
+         tabindex="${t.done ? '-1' : '0'}"
+         onclick="${t.done ? '' : `openSheet('${t.id}')`}">
+      <div class="pol-img">${inner}</div>
+      <div class="pol-name">${t.name}</div>
+    </div>`;
+}
+
+function buildAlbum() {
+  const g = document.getElementById('albumGrid');
+  if (g) g.innerHTML = tasks.map(polTileHtml).join('');
+}
+
+function buildBook() {
+  document.getElementById('bookDone').textContent = getDone();
+  document.getElementById('polGrid').innerHTML = tasks.map(polTileHtml).join('');
+}
+function showBook() { buildBook(); show('ov'); show('bookSh'); }
+
+// ─────────────────────────────────────────────
+// UPDATE STATS
+// ─────────────────────────────────────────────
+function updateStats() {
+  const done = getDone();
+  const dh = document.getElementById('diaryHeadTitle');
+  const dtxt = dh && dh.querySelector('.hero-diary-text');
+  if (dtxt) dtxt.textContent = BABY_NAME + '的满月日记';
+  const recHead = document.getElementById('recHeadTitle');
+  if (recHead) recHead.textContent = '✨ ' + fmtMD(TODAY) + '小事推荐';
+  document.getElementById('heroSub').textContent =
+    `${fmtMD(BIRTH)} → ${fmtMD(FULLMOON)} · 出生第${doff(TODAY) + 1}天`;
+  document.getElementById('progFill').style.width = (done / 20 * 100) + '%';
+  document.getElementById('progTxt').textContent  = done + ' / 20 件';
+  document.getElementById('bookDone').textContent  = done;
+  const ac = document.getElementById('albumDoneCount');
+  if (ac) ac.textContent = done;
+  const bookSub = document.getElementById('bookBannerSub');
+  if (bookSub) bookSub.textContent = `${fmtMD(BIRTH)} → ${fmtMD(FULLMOON)}`;
+  const abs = document.getElementById('albumBannerSub');
+  if (abs) abs.textContent = `${fmtMD(BIRTH)} → ${fmtMD(FULLMOON)}`;
+  const aht = document.getElementById('albumHeadTitle');
+  if (aht) aht.textContent = BABY_NAME + '的满月纪念册';
+  const bookShTitle = document.querySelector('#bookSh .sh-title');
+  if (bookShTitle) bookShTitle.textContent = '📕 ' + BABY_NAME + '的满月纪念册';
+}
+
+// ─────────────────────────────────────────────
+// SHEET CONTROLS
+// ─────────────────────────────────────────────
+function openSheet(id) {
+  curId = id;
+  const t = tasks.find(t => t.id === id);
+  document.getElementById('shTitle').textContent = t ? t.name : '记录小事';
+  show('ov'); show('recSh');
+}
+function openNext()   { const t = tasks.find(t => !t.done); if (t) openSheet(t.id); }
+function openCustom() { show('ov'); show('customSh'); }
+
+function addCustom() {
+  const v = document.getElementById('customInp').value.trim();
+  if (!v) return;
+  tasks.push({
+    id:     'c' + Date.now(),
+    name:   v,
+    desc:   '你的自定义记录',
+    emoji:  '⭐',
+    cat:    'custom',
+    done:   false,
+    custom: true,
+  });
+  document.getElementById('customInp').value = '';
+  closeAll();
+  updateAll();
+}
+
+function closeAll() {
+  ['ov','recSh','customSh','bookSh','msPop'].forEach(id =>
+    document.getElementById(id).classList.remove('show')
+  );
+}
+function show(id) { document.getElementById(id).classList.add('show'); }
+
+// ─────────────────────────────────────────────
+// COMPLETE TASK
+// ─────────────────────────────────────────────
+function doComplete(type) {
+  closeAll();
+  const t = tasks.find(t => t.id === curId);
+  if (!t || t.done) return;
+  t.done    = true;
+  t.type    = type;
+  t.doneDay = doff(TODAY);
+  if (type === 'photo') t.photoUrl = nextAssetPhoto();
+  else delete t.photoUrl;
+  updateAll();
+
+  const done = getDone();
+  const ms   = MILESTONES.find(m => m.n === done && !shownMs.has(done));
+  if (ms) { shownMs.add(done); setTimeout(() => showMs(ms), 400); }
+}
+
+// ─────────────────────────────────────────────
+// MILESTONE POPUP
+// ─────────────────────────────────────────────
+function showMs(m) {
+  document.getElementById('msE').textContent = m.e;
+  document.getElementById('msT').textContent = m.t;
+  document.getElementById('msD').textContent = m.d;
+  document.getElementById('msRn').textContent = m.r;
+  show('ov'); show('msPop');
+  doConfetti();
+}
+function closeMs() {
+  ['ov','msPop'].forEach(id => document.getElementById(id).classList.remove('show'));
+}
+
+// ─────────────────────────────────────────────
+// CONFETTI
+// ─────────────────────────────────────────────
+function doConfetti() {
+  const c    = document.getElementById('cfc');
+  c.innerHTML = '';
+  const cols = ['#FF4D88','#FFB3CE','#F5C842','#5DC85D','#5B9BFF','#FF7043'];
+  for (let i = 0; i < 50; i++) {
+    const p  = document.createElement('div');
+    p.className = 'ccp';
+    const sz = 5 + Math.random() * 7;
+    p.style.cssText = `
+      left:${Math.random() * 100}%;
+      width:${sz}px; height:${sz}px;
+      background:${cols[Math.floor(Math.random() * cols.length)]};
+      border-radius:${Math.random() > 0.5 ? '50%' : '3px'};
+      animation-delay:${Math.random() * 0.8}s;
+      animation-duration:${1.4 + Math.random()}s
+    `;
+    c.appendChild(p);
+  }
+  setTimeout(() => c.innerHTML = '', 3000);
+}
+
+// ─────────────────────────────────────────────
+// UPDATE ALL
+// ─────────────────────────────────────────────
+function updateAll() {
+  updateStats();
+  buildCal();
+  buildRec();
+  buildAlbum();
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+updateAll();
+setTimeout(() => {
+  document.getElementById('progFill').style.width = (getDone() / 20 * 100) + '%';
+}, 500);
+</script>
+</body>
+</html>
