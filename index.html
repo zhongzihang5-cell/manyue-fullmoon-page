@@ -805,7 +805,7 @@ body {
 <!-- ══════════════ NAV ══════════════ -->
 <nav class="nav">
   <button class="nav-back">‹</button>
-  <span class="nav-title">满月20件小事</span>
+  <span class="nav-title">满月日记</span>
   <button type="button" class="nav-share" onclick="sharePage()" aria-label="分享">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M18 8a3 3 0 1 0-2.83-4H15a3 3 0 0 0 3 3v.17A3 3 0 1 0 18 8ZM6 15a3 3 0 1 0 2.83 4H9a3 3 0 0 0-3-3v-.17A3 3 0 1 0 6 15ZM18 15l-7-4M6 9l7 4" stroke="#FF4D88" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -830,12 +830,12 @@ body {
           </span>
           <span class="hero-diary-text">柚子的满月日记</span>
         </h1>
-        <p class="hero-sub" id="heroSub">3月4日 → 4月4日 · 出生第13天</p>
+        <p class="hero-sub" id="heroSub">3月4日 → 4月4日</p>
         <div class="hero-prog-row">
           <div class="hero-prog-bar">
             <div class="hero-prog-fill" id="progFill" style="width:15%"></div>
           </div>
-          <span class="hero-prog-count" id="progTxt">3 / 20 件</span>
+          <span class="hero-prog-count" id="progTxt">12 / 30 天</span>
         </div>
       </div>
       <div class="hero-art" aria-hidden="true">
@@ -859,7 +859,7 @@ body {
 <!-- ══════════════ 今日推荐（2 条纪念小事） ══════════════ -->
 <div class="rec-wrap">
   <div class="rec-head">
-    <div class="rec-title" id="recHeadTitle">✨ 3月16日小事推荐</div>
+    <div class="rec-title" id="recHeadTitle">✨ 今日记录推荐</div>
   </div>
   <div id="recList"></div>
 </div>
@@ -870,13 +870,13 @@ body {
     <div class="album-title">📕 <span id="albumHeadTitle">柚子的满月纪念册</span></div>
   </div>
   <div class="book-banner">
-    <div class="book-banner-s"><span id="albumBannerSub">3月4日 → 4月4日</span> · 已收集 <span id="albumDoneCount">3</span> / 20 个瞬间</div>
+    <div class="book-banner-s"><span id="albumBannerSub">3月4日 → 4月4日</span> · 已收集 <span id="albumDoneCount">11</span> / 30 个瞬间</div>
   </div>
   <div class="pol-grid" id="albumGrid"></div>
-  <button type="button" class="add-custom-btn" onclick="openCustom()">＋ 添加一件自定义小事</button>
+  <button type="button" class="add-custom-btn" onclick="openCustom()">＋ 添加一个自定义瞬间</button>
   <div style="margin-top:14px">
-    <div class="album-download-hint">完成全部20件后可下载高清印刷版</div>
-    <button type="button" class="cta-btn" onclick="previewPhotoBook()">预览照片书</button>
+    <div class="album-download-hint">完成全部30天记录后可下载高清印刷版</div>
+    <button type="button" class="cta-btn" onclick="previewPhotoBook()">照片书预览</button>
   </div>
 </section>
 
@@ -977,13 +977,13 @@ body {
   <div class="sh-title">📕 柚子的满月纪念册</div>
   <div class="book-inner">
     <div class="book-banner">
-      <div class="book-banner-s"><span id="bookBannerSub">3月4日 → 4月4日</span> · 已收集 <span id="bookDone">3</span> / 20 个瞬间</div>
+      <div class="book-banner-s"><span id="bookBannerSub">3月4日 → 4月4日</span> · 已收集 <span id="bookDone">11</span> / 30 个瞬间</div>
     </div>
     <div class="pol-grid" id="polGrid"></div>
     <div style="margin-top:14px">
-      <div style="text-align:center;font-size:10px;color:var(--light);margin-bottom:8px">完成全部20件后可下载高清印刷版</div>
+      <div style="text-align:center;font-size:10px;color:var(--light);margin-bottom:8px">完成全部30天记录后可下载高清印刷版</div>
       <!-- TODO: 接入支付流程 -->
-      <button type="button" class="cta-btn" onclick="previewPhotoBook()">预览照片书</button>
+      <button type="button" class="cta-btn" onclick="previewPhotoBook()">照片书预览</button>
     </div>
   </div>
 </div>
@@ -1014,6 +1014,8 @@ const BABY_NAME  = '柚子';                  // TODO: 替换宝宝名字
 const BIRTH      = new Date(2025, 2, 4);   // TODO: 出生日期 (月份从0开始，3=4月)
 const FULLMOON   = new Date(2025, 3, 4);   // TODO: 满月日期
 const TODAY      = new Date(2025, 2, 16);  // TODO: 生产环境改为 new Date()
+/** 展示用满月周期天数（进度条、已收集分母等） */
+const DISPLAY_TOTAL_DAYS = 30;
 
 function stripTime(d) {
   const x = new Date(d);
@@ -1236,7 +1238,7 @@ async function sharePage() {
 }
 
 function previewPhotoBook() {
-  alert('预览照片书（原型示意）');
+  alert('照片书预览（原型示意）');
 }
 
 function polTileHtml(t) {
@@ -1271,15 +1273,18 @@ function showBook() { buildBook(); show('ov'); show('bookSh'); }
 // ─────────────────────────────────────────────
 function updateStats() {
   const done = getDone();
+  const dayIndex = Math.min(doff(TODAY) + 1, DISPLAY_TOTAL_DAYS);
   const dh = document.getElementById('diaryHeadTitle');
   const dtxt = dh && dh.querySelector('.hero-diary-text');
   if (dtxt) dtxt.textContent = BABY_NAME + '的满月日记';
   const recHead = document.getElementById('recHeadTitle');
-  if (recHead) recHead.textContent = '✨ ' + fmtMD(TODAY) + '小事推荐';
+  if (recHead) recHead.textContent = '✨ 今日记录推荐';
   document.getElementById('heroSub').textContent =
-    `${fmtMD(BIRTH)} → ${fmtMD(FULLMOON)} · 出生第${doff(TODAY) + 1}天`;
-  document.getElementById('progFill').style.width = (done / 20 * 100) + '%';
-  document.getElementById('progTxt').textContent  = done + ' / 20 件';
+    `${fmtMD(BIRTH)} → ${fmtMD(FULLMOON)}`;
+  document.getElementById('progFill').style.width =
+    (dayIndex / DISPLAY_TOTAL_DAYS * 100) + '%';
+  document.getElementById('progTxt').textContent =
+    dayIndex + ' / ' + DISPLAY_TOTAL_DAYS + ' 天';
   document.getElementById('bookDone').textContent  = done;
   const ac = document.getElementById('albumDoneCount');
   if (ac) ac.textContent = done;
@@ -1533,7 +1538,9 @@ function updateAll() {
 
 updateAll();
 setTimeout(() => {
-  document.getElementById('progFill').style.width = (getDone() / 20 * 100) + '%';
+  const dayIndex = Math.min(doff(TODAY) + 1, DISPLAY_TOTAL_DAYS);
+  document.getElementById('progFill').style.width =
+    (dayIndex / DISPLAY_TOTAL_DAYS * 100) + '%';
 }, 500);
 </script>
 </body>
